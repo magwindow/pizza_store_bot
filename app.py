@@ -1,21 +1,20 @@
 import os
 import asyncio
 from dotenv import load_dotenv
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart
+from aiogram import Bot, Dispatcher
+
+from handlers.user_private import user_private_router
 
 load_dotenv()
 
 bot = Bot(token=os.getenv('TOKEN'))
 dp = Dispatcher()
 
-
-@dp.message(CommandStart())
-async def start_cmd(message: types.Message):
-    await message.answer('Это была команда старт')
+dp.include_router(user_private_router)
 
 
 async def main():
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 
