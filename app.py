@@ -2,6 +2,8 @@ import os
 import asyncio
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
+from aiogram.enums import ParseMode
+from aiogram.client.bot import DefaultBotProperties
 
 from handlers.user_private import user_private_router
 from handlers.user_group import user_group_router
@@ -11,7 +13,7 @@ load_dotenv()
 
 ALLOWED_UPDATE = ['message', 'edited_message']
 
-bot = Bot(token=os.getenv('TOKEN'))
+bot = Bot(token=os.getenv('TOKEN'), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 
 dp.include_router(user_private_router)
