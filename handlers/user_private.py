@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart, Command, or_f
 from aiogram.utils.formatting import as_marked_section, Bold, as_list
 
 from filters.chat_types import ChatTypeFilter
-from keyboards.reply import start_kb
+from keyboards.reply import get_keyboard
 
 user_private_router = Router()
 user_private_router.message.filter(ChatTypeFilter(['private']))
@@ -11,7 +11,15 @@ user_private_router.message.filter(ChatTypeFilter(['private']))
 
 @user_private_router.message(CommandStart())
 async def start_cmd(message: types.Message):
-    await message.answer('Привет, я виртуальный помощник', reply_markup=start_kb)
+    await message.answer('Привет, я виртуальный помощник',
+                         reply_markup=get_keyboard(
+                             '📖 Меню',
+                             '📢 О магазине',
+                             '💰 Варианты оплаты',
+                             '📩 Варианты доставки',
+                             placeholder='Что вас интересует?',
+                             sizes=(2, 2)
+                         ))
 
 
 @user_private_router.message(or_f(Command('menu'), (F.text.lower() == '📖 меню')))
