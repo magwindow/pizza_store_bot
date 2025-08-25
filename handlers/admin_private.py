@@ -2,7 +2,9 @@ from aiogram import F, Router, types
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from database.orm_query import orm_add_product
 from filters.chat_types import ChatTypeFilter, IsAdmin
 from keyboards.reply import get_keyboard
 
@@ -26,21 +28,22 @@ async def add_product(message: types.Message):
 
 @admin_router.message(F.text == 'Я так, просто посмотреть зашел')
 async def starring_at_product(message: types.Message):
-    await message.answer('Ок, вот список товаров')
+    await message.answer('Ок, вот список товаров ⬆️')
 
 
 @admin_router.message(F.text == 'Изменить товар')
 async def change_product(message: types.Message):
-    await message.answer('Ок, вот список товаров')
+    await message.answer('Ок, вот список товаров ⬆️')
 
 
 @admin_router.message(F.text == 'Удалить товар')
 async def delete_product(message: types.Message):
-    await message.answer('Выберете товар(ы) для удаления')
+    await message.answer('Выберете товар(ы) для удаления ⬆️')
 
 
 # Машина состояний (FSM)
 class AddProduct(StatesGroup):
+    # Шаги состояний
     name = State()
     description = State()
     price = State()
@@ -54,6 +57,7 @@ class AddProduct(StatesGroup):
     }
 
 
+#  Становимся в состояние ожидания ввода name
 @admin_router.message(StateFilter(None), F.text == 'Добавить товар')
 async def add_product(message: types.Message, state: FSMContext):
     await message.answer('Введите название товара', reply_markup=types.ReplyKeyboardRemove())
@@ -113,10 +117,28 @@ async def add_price(message: types.Message, state: FSMContext):
     await state.set_state(AddProduct.image)
 
 
+# Хендлер для отлова некорректных ввода для состояния price
+@admin_router.message(AddProduct.price)
+async def add_price(message: types.Message):
+    await message.answer('Вы ввели недопустимые данные, введите стоимость товара')
+
+
+# Ловим данные для состояния image и потом выходим из состояний
 @admin_router.message(AddProduct.image, F.photo)
-async def add_image(message: types.Message, state: FSMContext):
+async def add_image(message: types.Message, state: FSMContext, session: AsyncSession):
     await state.update_data(image=message.photo[-1].file_id)
-    await message.answer('Товар добавлен', reply_markup=ADMIN_KB)
     data = await state.get_data()
-    await message.answer(str(data))
-    await state.clear()
+
+    try:
+        await orm_add_product(session, data)
+        await message.answer('Товар добавлен', reply_markup=ADMIN_KB)
+        await state.clear()
+    except Exception as e:
+        await message.answer(f'Ошибка:\n{str(e)}\nОбратитесь к программеру, он опять денег хочет',
+                             reply_markup=ADMIN_KB)
+        await state.clear()
+
+
+@admin_router.message(AddProduct.image)
+async def add_image(message: types.Message):
+    await message.answer('Отправьте фото пищи')
