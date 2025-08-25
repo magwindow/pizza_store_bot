@@ -14,7 +14,7 @@ from common.bot_cmds_list import private
 from database.engine import create_db, drop_db, session_maker
 from middlewares.db import DataBaseSession
 
-ALLOWED_UPDATE = ['message', 'edited_message']
+ALLOWED_UPDATE = ['message', 'edited_message', 'callback_query']
 
 bot = Bot(token=os.getenv('TOKEN'), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 bot.my_admins_list = []
