@@ -47,7 +47,7 @@ async def starring_at_product(callback: types.CallbackQuery, session: AsyncSessi
                     'Изменить': f'change_{product.id}',
                 },
                 sizes=(2,)
-            ),
+            )
         )
     await callback.answer()
     await callback.message.answer('ОК, вот список товаров ⏫')
