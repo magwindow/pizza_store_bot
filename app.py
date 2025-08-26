@@ -10,11 +10,9 @@ load_dotenv(find_dotenv())
 from handlers.user_private import user_private_router
 from handlers.user_group import user_group_router
 from handlers.admin_private import admin_router
-from common.bot_cmds_list import private
 from database.engine import create_db, drop_db, session_maker
 from middlewares.db import DataBaseSession
-
-ALLOWED_UPDATE = ['message', 'edited_message', 'callback_query']
+from common.bot_cmds_list import private
 
 bot = Bot(token=os.getenv('TOKEN'), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 bot.my_admins_list = []
@@ -44,8 +42,9 @@ async def main():
     dp.update.middleware(DataBaseSession(session_pool=session_maker))
 
     await bot.delete_webhook(drop_pending_updates=True)
+    # await bot.delete_my_commands(scope=types.BotCommandScopeAllPrivateChats())
     await bot.set_my_commands(commands=private, scope=types.BotCommandScopeAllPrivateChats())
-    await dp.start_polling(bot, allowed_updates=ALLOWED_UPDATE)
+    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
 if __name__ == '__main__':

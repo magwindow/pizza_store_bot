@@ -4,6 +4,7 @@ from aiogram import Router, types, Bot
 from aiogram.filters import Command
 
 from filters.chat_types import ChatTypeFilter
+from common.restricted_words import restricted_words
 
 user_group_router = Router()
 user_group_router.message.filter(ChatTypeFilter(['group', 'supergroup']))
@@ -22,8 +23,6 @@ async def get_admins(message: types.Message, bot: Bot):
     if message.from_user.id in admins_list:
         await message.delete()
     # print(admins_list)
-
-restricted_words = {'кабан', 'хомяк', 'выхухоль'}
 
 
 def clean_text(text: str):
